@@ -41,8 +41,14 @@ FlappyBirdReborn.MainMenu.prototype = {
         this.titleGroup.y = 100;
 
         this.game.add.tween(this.titleGroup).to({y: 115}, 700, Phaser.Easing.Linear.None, true, 0, -1, true);
+
+        this.startButton = this.game.add.button(this.game.width/2, 300, 'startButton', this.startClick, this);
+        this.startButton.anchor.setTo(0.5, 0.5);
     },
     update: function(){
+    },
+    startClick: function(){
+        game.state.start("Play");
     }
 }
 
