@@ -39,6 +39,8 @@ FlappyBirdReborn.MainMenu.prototype = {
 
         this.titleGroup.x = 30;
         this.titleGroup.y = 100;
+
+        this.game.add.tween(this.titleGroup).to({y: 115}, 700, Phaser.Easing.Linear.None, true, 0, -1, true);
     },
     update: function(){
     }
