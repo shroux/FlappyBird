@@ -1,4 +1,5 @@
     var Bird = function(game, x, y, frame){
+        this.onGround = false;
         Phaser.Sprite.call(this, game, x, y, 'bird', frame);
         this.anchor.setTo(0.5, 0.5);
 

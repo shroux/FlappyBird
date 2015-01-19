@@ -34,6 +34,3 @@
         this.checkWorldBounds();
     };
 
-    PipeGroup.prototype.stop = function(){
-        this.setAll('body.velocity.x', 0);
-    };

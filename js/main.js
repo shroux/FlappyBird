@@ -5,7 +5,6 @@ FlappyBirdReborn.MainMenu = function(){ };
 FlappyBirdReborn.Play = function(){ };
 FlappyBirdReborn.Preload = function(){ this.asset = null; this.ready = false; this.nbLoaded = 0};
 FlappyBirdReborn.Boot = function(){ };
-FlappyBirdReborn.Gameover = function(){ };
 
 FlappyBirdReborn.Boot.prototype = {
     preload: function(){
@@ -19,15 +18,6 @@ FlappyBirdReborn.Boot.prototype = {
     }
 }
 
-FlappyBirdReborn.Gameover.prototype = {
-    preload: function(){
-    },
-
-    create: function(){
-    },
-    update: function(){
-    }
-}
 
 FlappyBirdReborn.MainMenu.prototype = {
     preload: function(){
@@ -134,19 +124,27 @@ FlappyBirdReborn.Play.prototype = {
     },
     birdDie: function(){
         this.bird.die();
-        this.ground.autoScroll(0, 0);
-        this.pipes.forEach(function(p){
-            p.stop();
-            game.time.events.remove(this.pipeGenerator);
-            if (p.bottomPipe.body.touching.up){
-                this.bird.body.velocity.x = 80;
-                this.bird.angle += 2;
-            }
-        }, this);
+        this.ground.stopScroll();
+        this.pipes.callAll('stop');
+        this.pipeGenerator.timer.stop();
+//        this.pipes.forEach(function(p){
+//            p.stop();
+//            game.time.events.remove(this.pipeGenerator);
+//            if (p.bottomPipe.body.touching.up){
+//                this.bird.body.velocity.x = 80;
+//                this.bird.angle += 2;
+//            }
+//        }, this);
     },
     deathHandler: function(){
-        this.groundHit.play();
-        game.state.start("Gameover");
+        //this.groundHit.play();
+        this.bird.alive = false;
+        if (this.bird.onGround != true){
+        this.scoreboard = new Scoreboard(this.game);
+        this.game.add.existing(this.scoreboard);
+        this.scoreboard.show(this.score);
+        this.bird.onGround = true;
+        }
     },
     startGame: function(){
         if (!this.bird.alive){
@@ -161,6 +159,7 @@ FlappyBirdReborn.Play.prototype = {
         this.game.input.keyboard.removeKey(Phaser.Keyboard.SPACEBAR);
         this.bird.destroy();
         this.pipes.destroy();
+        this.scoreboard.destroy();
     }
 }
 
@@ -178,9 +177,13 @@ FlappyBirdReborn.Preload.prototype = {
         this.load.image('startButton', './assets/start-button.png');
         this.load.image('instructions', './assets/instructions.png');
         this.load.image('getReady', './assets/get-ready.png');
+        this.load.image('scoreboard', 'assets/scoreboard.png');
+        this.load.image('gameover', 'assets/gameover.png');
+        this.load.image('particle', 'assets/particle.png');
 
         this.load.spritesheet('bird', './assets/bird.png', 34, 24, 3);
         this.load.spritesheet('pipe', './assets/pipes.png', 54, 320, 2);
+        this.load.spritesheet('medals', 'assets/medals.png', 44, 46, 2);
 
         this.load.bitmapFont('flappyfont', './assets/fonts/flappyfont/flappyfont.png', './assets/fonts/flappyfont/flappyfont.fnt');
 
@@ -215,7 +218,6 @@ game.state.add('MainMenu', FlappyBirdReborn.MainMenu);
 game.state.add('Play', FlappyBirdReborn.Play);
 game.state.add('Preload', FlappyBirdReborn.Preload);
 game.state.add('Boot', FlappyBirdReborn.Boot);
-game.state.add('Gameover', FlappyBirdReborn.Gameover);
 
 
 game.state.start('Boot');
