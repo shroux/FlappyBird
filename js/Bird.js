@@ -6,6 +6,7 @@
         this.animations.play('flap', 12, true);
 
         this.game.physics.arcade.enableBody(this);
+        this.alive = true;
     };
 
     Bird.prototype = Object.create(Phaser.Sprite.prototype);
@@ -18,7 +19,13 @@
     };
 
     Bird.prototype.flap = function(){
-        this.body.velocity.y = -400;
+        if (this.alive){
+            this.body.velocity.y = -400;
+            this.game.add.tween(this).to({angle: -40}, 100).start();
+        }
+    };
 
-        this.game.add.tween(this).to({angle: -40}, 100).start();
+    Bird.prototype.die = function(){
+        this.alive = false;
+        this.animations.stop('flap');
     };

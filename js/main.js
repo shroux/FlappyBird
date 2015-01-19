@@ -5,6 +5,7 @@ FlappyBirdReborn.MainMenu = function(){ };
 FlappyBirdReborn.Play = function(){ };
 FlappyBirdReborn.Preload = function(){ this.asset = null; this.ready = false; this.nbLoaded = 0};
 FlappyBirdReborn.Boot = function(){ };
+FlappyBirdReborn.Gameover = function(){ };
 
 FlappyBirdReborn.Boot.prototype = {
     preload: function(){
@@ -13,6 +14,16 @@ FlappyBirdReborn.Boot.prototype = {
 
     create: function(){
         this.game.state.start('Preload');
+    },
+    update: function(){
+    }
+}
+
+FlappyBirdReborn.Gameover.prototype = {
+    preload: function(){
+    },
+
+    create: function(){
     },
     update: function(){
     }
@@ -80,7 +91,13 @@ FlappyBirdReborn.Play.prototype = {
         this.pipeGenerator.timer.start();
     },
     update: function(){
-        this.game.physics.arcade.collide(this.bird, this.ground);
+        this.game.physics.arcade.collide(this.bird, this.ground, this.deathHandler, null, this);
+        this.pipes.forEach(function(p){
+            this.game.physics.arcade.collide(this.bird, p, this.birdDie, null, this);
+        }, this);
+        if(!this.bird.inWorld){
+            this.deathHandler();
+        }
     },
     generatePipes: function(){
         var pipeY = this.game.rnd.integerInRange(-100, 100);
@@ -88,6 +105,22 @@ FlappyBirdReborn.Play.prototype = {
         if (!pipeGroup)
             pipeGroup = new PipeGroup(this.game, this.pipes);
         pipeGroup.reset(this.game.width + pipeGroup.width/2, pipeY);
+    },
+    birdDie: function(){
+        this.bird.die();
+        this.ground.autoScroll(0, 0);
+        this.pipes.forEach(function(p){
+            p.stop();
+            game.time.events.remove(this.pipeGenerator);
+            if (p.bottomPipe.body.touching.up){
+                this.bird.body.velocity.x = 80;
+                this.bird.angle += 1.6;
+            }
+        }, this);
+    },
+    deathHandler: function(){
+        game.state.start("Gameover");
+        console.log('dead');
     }
 }
 
@@ -133,6 +166,7 @@ game.state.add('MainMenu', FlappyBirdReborn.MainMenu);
 game.state.add('Play', FlappyBirdReborn.Play);
 game.state.add('Preload', FlappyBirdReborn.Preload);
 game.state.add('Boot', FlappyBirdReborn.Boot);
+game.state.add('Gameover', FlappyBirdReborn.Gameover);
 
 
 game.state.start('Boot');
