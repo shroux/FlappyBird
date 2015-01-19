@@ -83,16 +83,17 @@ FlappyBirdReborn.Play.prototype = {
         this.ground = new Ground(this.game, 0, 400, 335, 112);
         this.game.add.existing(this.ground);
 
+        this.scoreSound = this.game.add.audio('score');
+        this.groundHit = this.game.add.audio('groundHit');
+
         this.instructionGroup = this.game.add.group();
         this.instructionGroup.add(this.game.add.sprite(this.game.width/2, 100, 'getReady'));
         this.instructionGroup.add(this.game.add.sprite(this.game.width/2, 325, 'instructions'));
         this.instructionGroup.setAll('anchor.x', 0.5);
         this.instructionGroup.setAll('anchor.y', 0.5);
 
-
         this.scoreText = this.game.add.bitmapText(this.game.width/2 - 30, 10, 'flappyfont', this.score.toString() + " pipe", 24);
         this.scoreText.visible = true;
-
 
         this.game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
         var flapKey = this.input.keyboard.addKey([Phaser.Keyboard.SPACEBAR]);
@@ -122,6 +123,7 @@ FlappyBirdReborn.Play.prototype = {
     },
     checkScore: function(pipeGroup){
         if (pipeGroup.exists && !pipeGroup.hasScored && pipeGroup.topPipe.world.x <= this.bird.world.x && this.bird.alive){
+            this.scoreSound.play();
             this.score++;
             pipeGroup.hasScored = true;
             if (this.score < 2)
@@ -143,6 +145,7 @@ FlappyBirdReborn.Play.prototype = {
         }, this);
     },
     deathHandler: function(){
+        this.groundHit.play();
         game.state.start("Gameover");
     },
     startGame: function(){
@@ -180,6 +183,11 @@ FlappyBirdReborn.Preload.prototype = {
         this.load.spritesheet('pipe', './assets/pipes.png', 54, 320, 2);
 
         this.load.bitmapFont('flappyfont', './assets/fonts/flappyfont/flappyfont.png', './assets/fonts/flappyfont/flappyfont.fnt');
+
+        this.load.audio('score', './assets/score.wav');
+        this.load.audio('flap', './assets/flap.wav');
+        this.load.audio('pipeHit', './assets/ouch.wav');
+        this.load.audio('groundHit', './assets/ground-hit.wav');
 
         this.progress = game.add.text(288/2 - 50, 505/2 + 15, "0", { font: "14px Arial", fill: "#ffffff"});
 

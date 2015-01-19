@@ -5,6 +5,9 @@
         this.animations.add('flap');
         this.animations.play('flap', 12, true);
 
+        this.flapSound = this.game.add.audio('flap');
+        this.dieSound = this.game.add.audio('pipeHit');
+
         this.game.physics.arcade.enableBody(this);
         this.body.allowGravity = false;
         this.alive = false;
@@ -21,12 +24,15 @@
 
     Bird.prototype.flap = function(){
         if (this.alive){
+            this.flapSound.play();
             this.body.velocity.y = -400;
             this.game.add.tween(this).to({angle: -40}, 100).start();
         }
     };
 
     Bird.prototype.die = function(){
+        if (this.alive)
+            this.dieSound.play();
         this.alive = false;
         this.animations.stop('flap');
     };
