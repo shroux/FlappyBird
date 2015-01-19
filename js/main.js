@@ -71,6 +71,8 @@ FlappyBirdReborn.Play.prototype = {
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
         this.game.physics.arcade.gravity.y = 1100;
 
+        this.score = 0;
+
         this.background = this.game.add.sprite(0, 0, 'background');
 
         this.bird = new Bird(this.game, 100, 505/2);
@@ -81,18 +83,30 @@ FlappyBirdReborn.Play.prototype = {
         this.ground = new Ground(this.game, 0, 400, 335, 112);
         this.game.add.existing(this.ground);
 
+        this.instructionGroup = this.game.add.group();
+        this.instructionGroup.add(this.game.add.sprite(this.game.width/2, 100, 'getReady'));
+        this.instructionGroup.add(this.game.add.sprite(this.game.width/2, 325, 'instructions'));
+        this.instructionGroup.setAll('anchor.x', 0.5);
+        this.instructionGroup.setAll('anchor.y', 0.5);
+
+
+        this.scoreText = this.game.add.bitmapText(this.game.width/2 - 30, 10, 'flappyfont', this.score.toString() + " pipe", 24);
+        this.scoreText.visible = true;
+
+
         this.game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
         var flapKey = this.input.keyboard.addKey([Phaser.Keyboard.SPACEBAR]);
+        flapKey.onDown.addOnce(this.startGame, this);
         flapKey.onDown.add(this.bird.flap, this.bird);
 
+        this.input.onDown.addOnce(this.startGame, this);
         this.input.onDown.add(this.bird.flap, this.bird);
 
-        this.pipeGenerator = this.game.time.events.loop(Phaser.Timer.SECOND * 1.25, this.generatePipes, this);
-        this.pipeGenerator.timer.start();
     },
     update: function(){
         this.game.physics.arcade.collide(this.bird, this.ground, this.deathHandler, null, this);
         this.pipes.forEach(function(p){
+            this.checkScore(p);
             this.game.physics.arcade.collide(this.bird, p, this.birdDie, null, this);
         }, this);
         if(!this.bird.inWorld){
@@ -106,6 +120,16 @@ FlappyBirdReborn.Play.prototype = {
             pipeGroup = new PipeGroup(this.game, this.pipes);
         pipeGroup.reset(this.game.width + pipeGroup.width/2, pipeY);
     },
+    checkScore: function(pipeGroup){
+        if (pipeGroup.exists && !pipeGroup.hasScored && pipeGroup.topPipe.world.x <= this.bird.world.x && this.bird.alive){
+            this.score++;
+            pipeGroup.hasScored = true;
+            if (this.score < 2)
+                this.scoreText.setText(this.score.toString() + " pipe");
+            else
+                this.scoreText.setText(this.score.toString() + " pipes");
+        }
+    },
     birdDie: function(){
         this.bird.die();
         this.ground.autoScroll(0, 0);
@@ -114,13 +138,26 @@ FlappyBirdReborn.Play.prototype = {
             game.time.events.remove(this.pipeGenerator);
             if (p.bottomPipe.body.touching.up){
                 this.bird.body.velocity.x = 80;
-                this.bird.angle += 1.6;
+                this.bird.angle += 2;
             }
         }, this);
     },
     deathHandler: function(){
         game.state.start("Gameover");
-        console.log('dead');
+    },
+    startGame: function(){
+        if (!this.bird.alive){
+            this.bird.body.allowGravity = true;
+            this.bird.alive = true;
+            this.pipeGenerator = this.game.time.events.loop(Phaser.Timer.SECOND * 1.25, this.generatePipes, this);
+            this.pipeGenerator.timer.start();
+            this.instructionGroup.destroy();
+        }
+    },
+    shutdown: function(){
+        this.game.input.keyboard.removeKey(Phaser.Keyboard.SPACEBAR);
+        this.bird.destroy();
+        this.pipes.destroy();
     }
 }
 
@@ -136,9 +173,13 @@ FlappyBirdReborn.Preload.prototype = {
         this.load.image('ground', './assets/ground.png');
         this.load.image('title', './assets/title.png');
         this.load.image('startButton', './assets/start-button.png');
+        this.load.image('instructions', './assets/instructions.png');
+        this.load.image('getReady', './assets/get-ready.png');
 
         this.load.spritesheet('bird', './assets/bird.png', 34, 24, 3);
         this.load.spritesheet('pipe', './assets/pipes.png', 54, 320, 2);
+
+        this.load.bitmapFont('flappyfont', './assets/fonts/flappyfont/flappyfont.png', './assets/fonts/flappyfont/flappyfont.fnt');
 
         this.progress = game.add.text(288/2 - 50, 505/2 + 15, "0", { font: "14px Arial", fill: "#ffffff"});
 
@@ -158,7 +199,7 @@ FlappyBirdReborn.Preload.prototype = {
     },
     onFileComplete: function(progress){
         this.nbLoaded += 1;
-        this.progress.text = this.nbLoaded + " files loaded on 6";
+        this.progress.text = this.nbLoaded + " files loaded on 9";
     }
 }
 

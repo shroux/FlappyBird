@@ -6,14 +6,15 @@
         this.animations.play('flap', 12, true);
 
         this.game.physics.arcade.enableBody(this);
-        this.alive = true;
+        this.body.allowGravity = false;
+        this.alive = false;
     };
 
     Bird.prototype = Object.create(Phaser.Sprite.prototype);
     Bird.prototype.constructor = Bird;
 
     Bird.prototype.update = function() {
-        if (this.angle < 90){
+        if (this.angle < 90 && this.alive == true){
             this.angle += 2.5;
         }
     };
