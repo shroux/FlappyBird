@@ -65,6 +65,8 @@ FlappyBirdReborn.Play.prototype = {
         this.bird = new Bird(this.game, 100, 505/2);
         this.game.add.existing(this.bird);
 
+        this.pipes = this.game.add.group();
+
         this.ground = new Ground(this.game, 0, 400, 335, 112);
         this.game.add.existing(this.ground);
 
@@ -73,9 +75,19 @@ FlappyBirdReborn.Play.prototype = {
         flapKey.onDown.add(this.bird.flap, this.bird);
 
         this.input.onDown.add(this.bird.flap, this.bird);
+
+        this.pipeGenerator = this.game.time.events.loop(Phaser.Timer.SECOND * 1.25, this.generatePipes, this);
+        this.pipeGenerator.timer.start();
     },
     update: function(){
         this.game.physics.arcade.collide(this.bird, this.ground);
+    },
+    generatePipes: function(){
+        var pipeY = this.game.rnd.integerInRange(-100, 100);
+        var pipeGroup = this.pipes.getFirstExists(false);
+        if (!pipeGroup)
+            pipeGroup = new PipeGroup(this.game, this.pipes);
+        pipeGroup.reset(this.game.width + pipeGroup.width/2, pipeY);
     }
 }
 
@@ -93,6 +105,7 @@ FlappyBirdReborn.Preload.prototype = {
         this.load.image('startButton', './assets/start-button.png');
 
         this.load.spritesheet('bird', './assets/bird.png', 34, 24, 3);
+        this.load.spritesheet('pipe', './assets/pipes.png', 54, 320, 2);
 
         this.progress = game.add.text(288/2 - 50, 505/2 + 15, "0", { font: "14px Arial", fill: "#ffffff"});
 
@@ -112,7 +125,7 @@ FlappyBirdReborn.Preload.prototype = {
     },
     onFileComplete: function(progress){
         this.nbLoaded += 1;
-        this.progress.text = this.nbLoaded + " files loaded on 5";
+        this.progress.text = this.nbLoaded + " files loaded on 6";
     }
 }
 
